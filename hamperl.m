@@ -1,6 +1,8 @@
 function [hi] = hamperl(dfft,wind)
     h = zeros(size(dfft));
     std_mult = 1;
+    %figure; hold on
+    %loglog(abs(dfft),'k')
     for i = 1:length(dfft)
         h(i) = dfft(i); 
         if i > floor(wind/2)
@@ -17,5 +19,7 @@ function [hi] = hamperl(dfft,wind)
             end
         end
     end
+    %loglog(abs(h),'r')
     hi = ifft(h,'symmetric');
+    %loglog(abs(h(1:131)),'k')
 end

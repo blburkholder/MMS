@@ -1,22 +1,18 @@
-function [wind_lengs,cs_centers] = find_cs(jt,bx,by,bz,jjj)
+function [intervals] = find_cs(jt,bx,by,bz)
 
-    ink_inds = [15,16,26,28,31,43,45,80,94,96,98,99,100,105,...
-            107,112,114,115,117,119,128,133,146,148,150,156,163,166,...
-            171,177,179,183,185,186,187,192,210,212,216,217,224,...
-            234,235,241,256,260,268,269,271,277,278,279,283,284];
     start_wind = 100;   
     wind = start_wind;
     xf = zeros(length(bx),1);
     yf = zeros(length(by),1);
     zf = zeros(length(bz),1);
 
-%     figure('visible','off')
-%     %figure
-%     subplot(3,1,1); hold on;
-%     plot(jt,bx,'r');plot(jt,by,'g');plot(jt,bz,'b');
-%     xlim([1 length(bx)])
-%     subplot(3,1,2); hold on;
-%     xlim([1 length(bx)])
+    %figure('visible','off')
+    figure('rend','painters','pos',[10 10 1000 800])
+    subplot(3,1,1); hold on;
+    plot(bx,'r');plot(by,'g');plot(bz,'b');
+    %xlim([1 length(bx)])
+    subplot(3,1,2); hold on;
+    %xlim([1 length(bx)])
 
     while wind < length(bx)/4
         for i = 1:length(bx)-wind
@@ -38,69 +34,42 @@ function [wind_lengs,cs_centers] = find_cs(jt,bx,by,bz,jjj)
         end
         wind = wind+100;
     end
-%     plot(jt,xf,'r')
-%     plot(jt,yf,'g')
-%     plot(jt,zf,'b')
-%     plot(jt,(xf+yf+zf)/3,'k')
+    plot(xf,'r')
+    plot(yf,'g')
+    plot(zf,'b')
 
     jumpfuck = (xf+yf+zf)/3;
+    subplot(3,1,3); hold on
+    plot(jumpfuck,'k')
     [peaksx,loc] = findpeaks(jumpfuck);
-%     plot(jt(loc),peaksx,'kv')
-    
-    [peaksx,px] = sort(peaksx,'descend');
-    loc = loc(px);
+    plot(loc,peaksx,'kv')
 
-    csss = hand_determined_cs(jjj);
-    wind_lengs = zeros(sum(csss~=0),1);
-    cs_centers = zeros(sum(csss~=0),1);
+    [~,so] = sort(peaksx,'descend');
 
-    this_guy = 1;
-    for z = csss(csss ~= 0)
-%         subplot(3,1,2)
-%         plot(jt(loc(z)),peaksx(z),'kv','MarkerFaceColor','k')
-        wx_help = 0;
-        wy_help = 0;
-        wz_help = 0;
-        for wll = 100:50:500
-            difx = abs(bx(loc(z)-wll/2) - bx(loc(z)+wll/2));
-            if difx > wx_help
-                wx_help = difx;
-                wlx = wll;
-            else
-                break;
+    intervals = [];
+    accepted = 0;
+    more_cs = 1;
+    ints = 0;
+    if input('do it?')
+        while more_cs
+            while ~accepted
+                x = input('which fucking peak?');
+                plot([loc(so(x)),loc(so(x))],[0,1],'k')
+                accepted = input('do you fucking accept?');
             end
-        end
-
-        for wll = 100:50:500
-            dify = abs(by(loc(z)-wll/2) - by(loc(z)+wll/2));
-            if dify > wy_help
-                wy_help = dify;
-                wly = wll;
-            else
-                break;
+            accepted = 0;
+            ints = ints + 1;
+            while ~accepted
+                window = ginput(1);
+                plot([2*loc(so(x))-window(1),2*loc(so(x))-window(1)],[0,1],'r')
+                plot([window(1),window(1)],[0,1],'r')
+                accepted = input('do you fucking accept?');
             end
+            intervals(ints,1) = loc(so(x));
+            intervals(ints,2) = abs(window(1) - loc(so(x)));
+            more_cs = input('any more fucking current sheets?');
+            accepted = 0;
         end
-
-        for wll = 100:50:500
-            difz = abs(bz(loc(z)-wll/2) - bz(loc(z)+wll/2));
-            if difz > wz_help
-                wz_help = difz;
-                wlz = wll;
-            else
-                break;
-            end
-        end
-        wl = max([wlx,wly,wlz]);
-        if (sum(ink_inds == jjj) > 0)
-            wl = wl*2;
-        end    
-%         subplot(3,1,1)
-%         plot(jt((loc(z)-wl):(loc(z)+wl)),bx((loc(z)-wl):(loc(z)+wl)),'k.')
-%         plot(jt((loc(z)-wl):(loc(z)+wl)),by((loc(z)-wl):(loc(z)+wl)),'k.')
-%         plot(jt((loc(z)-wl):(loc(z)+wl)),bz((loc(z)-wl):(loc(z)+wl)),'k.')
-        cs_centers(this_guy) = loc(z);
-        wind_lengs(this_guy) = wl;
-        this_guy = this_guy + 1;
     end
 end
             

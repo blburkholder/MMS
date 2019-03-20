@@ -3,7 +3,7 @@
 function [j1,j2,bx_comp_int,by_comp_int,bz_comp_int,x_comp_int,y_comp_int,z_comp_int,tt,B_tag,sc] = cur_dens(pathpath,B_path1,B_path2)
     [x_comp,y_comp,z_comp,t_pos,bx_comp,by_comp,bz_comp,t_B,B_tag,sc] = MMS_fgm(pathpath,B_path1,B_path2);
     [x_comp_int,y_comp_int,z_comp_int,bx_comp_int,by_comp_int,bz_comp_int,tt] =...
-        interp_time(bx_comp,by_comp,bz_comp,x_comp,y_comp,z_comp,t_B,t_pos,sc);
+        interp_time_B(bx_comp,by_comp,bz_comp,x_comp,y_comp,z_comp,t_B,t_pos,sc);
 
 j1 = [];
 j2 = [];
