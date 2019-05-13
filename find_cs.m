@@ -6,10 +6,14 @@ function [intervals] = find_cs(jt,bx,by,bz)
     yf = zeros(length(by),1);
     zf = zeros(length(bz),1);
 
+    resfrac = ceil(length(bx)/2000);
+    inds = 1:length(bx);
+    inds = inds(1:resfrac:end);
+
     %figure('visible','off')
     figure('rend','painters','pos',[10 10 1000 800])
     subplot(3,1,1); hold on;
-    plot(bx,'r');plot(by,'g');plot(bz,'b');
+    plot(inds,bx(1:resfrac:end),'r');plot(inds,by(1:resfrac:end),'g');plot(inds,bz(1:resfrac:end),'b');
     %xlim([1 length(bx)])
     subplot(3,1,2); hold on;
     %xlim([1 length(bx)])
@@ -34,13 +38,13 @@ function [intervals] = find_cs(jt,bx,by,bz)
         end
         wind = wind+100;
     end
-    plot(xf,'r')
-    plot(yf,'g')
-    plot(zf,'b')
+    plot(inds,xf(1:resfrac:end),'r')
+    plot(inds,yf(1:resfrac:end),'g')
+    plot(inds,zf(1:resfrac:end),'b')
 
     jumpfuck = (xf+yf+zf)/3;
     subplot(3,1,3); hold on
-    plot(jumpfuck,'k')
+    plot(inds,jumpfuck(1:resfrac:end),'k')
     [peaksx,loc] = findpeaks(jumpfuck);
     plot(loc,peaksx,'kv')
 

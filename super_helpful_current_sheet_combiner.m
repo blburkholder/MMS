@@ -6,7 +6,7 @@ A = fscanf(fid,'%s\n');
 load('current_sheets.mat')
 
 for jjj = [1:200,202:224,226:303]
-    jjj
+  jjj
     %determine the path of the jjj-th mms data file
     datey = A((jjj-1)*34+1:jjj*34);
     date2 = datey(17:end-4);
@@ -27,8 +27,8 @@ for jjj = [1:200,202:224,226:303]
     missing = 0;
 
     %not sure about lengths of vectors and #sc so cant preallocate :(
-    vx_comp = []; vy_comp = []; vz_comp = []; rho_comp = []; p_comp = []; temp_comp = []; etemp_comp = [];
-    ion_dens = []; ti = []; te = [];
+    vx_comp = []; vy_comp = []; vz_comp = []; rho_comp = []; p_comp = []; temppar_comp = []; etemppar_comp = [];
+    ion_dens = []; ti = []; te = []; tempperp_comp = []; etempperp_comp = []; p_comp = []; ep_comp = [];
 
     %getting FPI data
     fpi_sc = 0;
@@ -39,57 +39,59 @@ for jjj = [1:200,202:224,226:303]
             fprintf(['only ',num2str(sc), ' MMS FGM files available\n']);
         end
         try
-            [electro_data,~] = spdfcdfread([path1,num2str(i),e_path1,num2str(i),e_path2]);
-            [data,~] = spdfcdfread([path1,num2str(i),i_path1,num2str(i),i_path2]);
+            [electro_data,infos] = spdfcdfread([path1,num2str(i),e_path1,num2str(i),e_path2]);
+            [data,infso] = spdfcdfread([path1,num2str(i),i_path1,num2str(i),i_path2]);
             fpi_sc = fpi_sc + 1;
 
             ti(1:length(data{1}),fpi_sc) = data{1};
             te(1:length(electro_data{1}),fpi_sc) = electro_data{1};
             numberdensity = electro_data{23}; %cm^-3
+            densi = data{19};
             bulkv = data{25}; %GSE
+            % pay attention to this error flag
+            % https://lasp.colorado.edu/galaxy/pages/viewpage.action?pageId=37618954
+            % erreflag = electro_data{4};
+    
+            etempperp = electro_data{46};
+            etemppar = electro_data{45};
+            tempperp = data{41};
+            temppar = data{40}; 
 
-            etemptens = electro_data{36};
-            temptens = data{33}; 
-            teemp = zeros(length(bulkv(:,1)),1);
-            eteemp = zeros(length(numberdensity),1);
-             for iii = 1:length(bulkv(:,1))
-                 teemp(iii) = trace(temptens(:,:,iii));
-             end
-             for iii = 1:length(numberdensity)
-                 eteemp(iii) = trace(etemptens(:,:,iii));
-             end
+            eep = electro_data{33};
+            ep = zeros(length(electro_data{23}),1);
+            for jk = 1:length(electro_data{23})
+                ep(jk) = trace(eep(:,:,jk));
+            end
+            pp = data{29}; 
+            p = zeros(length(pp),1);
+            for jk = 1:length(pp)
+                p(jk) = trace(pp(:,:,jk));
+            end
 
             wind = 20+ceil(length(bulkv(:,1))/50);
-            vx_comp(1:length(bulkv(:,1)),fpi_sc) = smooth(hamperl(fft(bulkv(:,1)),wind),12);
-            vy_comp(1:length(bulkv(:,2)),fpi_sc) = smooth(hamperl(fft(bulkv(:,2)),wind),24);
-            vz_comp(1:length(bulkv(:,3)),fpi_sc) = smooth(hamperl(fft(bulkv(:,3)),wind),12);
+            vx_comp(1:length(bulkv(:,1)),fpi_sc) = smooth(hamperl(fft(hamperl(fft(bulkv(:,1)),wind)),wind),6);
+            vy_comp(1:length(bulkv(:,2)),fpi_sc) = smooth(hamperl(fft(hamperl(fft(bulkv(:,2)),wind)),wind),6);
+            vz_comp(1:length(bulkv(:,3)),fpi_sc) = smooth(hamperl(fft(hamperl(fft(bulkv(:,3)),wind)),wind),6);
             rho_comp(1:length(electro_data{23}),fpi_sc) = (10^6)*smooth(numberdensity,30);
-            temp_comp(1:length(teemp),fpi_sc) = smooth(hamperl(fft(teemp),wind),12);
-            etemp_comp(1:length(eteemp),fpi_sc) = smooth((eteemp),30);
 
-        catch
+            temppar_comp(1:length(temppar),fpi_sc) = smooth(hamperl(fft(temppar),wind),12);
+            etemppar_comp(1:length(etemppar),fpi_sc) = smooth((etemppar),30);
+            tempperp_comp(1:length(tempperp),fpi_sc) = smooth(hamperl(fft(tempperp),wind),12);
+            etempperp_comp(1:length(etempperp),fpi_sc) = smooth((etempperp),30);
+
+            p_comp(1:length(densi),fpi_sc) = smooth(hamperl(fft(hamperl(fft(p),wind)),wind),12);
+            ep_comp(1:length(electro_data{23}),fpi_sc) = smooth(ep,30);
+
+%             p_comp(1:length(densi),fpi_sc) = smooth(hamperl(fft(densi.*(2*tempperp+temppar)/3),wind),12);
+%             ep_comp(1:length(electro_data{23}),fpi_sc) = smooth(numberdensity.*(2*etempperp+etemppar)/3,30);
+       catch
             fprintf(['no MMS',num2str(i), 'FPI\n']);
             missing = i;
-        end
+       end
     end  
 
     if fpi_sc > 0
-%     vx  = bulkv(:,1);
-%     vx_clean = vx_comp(:,end);
-%     vy  = bulkv(:,2);
-%     vy_clean = vy_comp(:,end);
-%     vz  = bulkv(:,3);
-%     vz_clean = vz_comp(:,end);
-%     temp  = teemp;
-%     temp_clean = temp_comp(:,end);
-
-%     figure('Visible','off');
-%     subplot(2,2,1); plot(vx); hold on; plot(vx_clean(1:end-1)); title('v_x')
-%     subplot(2,2,2); plot(vy); hold on; plot(vy_clean(1:end-1)); title('v_y')
-%     subplot(2,2,3);  plot(vz); hold on; plot(vz_clean(1:end-1)); title('v_z')
-%     subplot(2,2,4); plot(temp); hold on; plot(temp_clean); title('temperature')
-%     saveas(gcf,['cleanage',num2str(jjj),'.png'])
-
+    
     B = repmat(bx_int1,1,1,3);
     B(:,:,2) = by_int1; B(:,:,3) = bz_int1;
 
@@ -102,8 +104,14 @@ for jjj = [1:200,202:224,226:303]
     current_sheets(jjj).mag_data = B;
     current_sheets(jjj).v_data = V;
     current_sheets(jjj).rho_data = rho_comp;
-    current_sheets(jjj).temp_data = temp_comp;
-    current_sheets(jjj).etemp_data = etemp_comp;
+
+    current_sheets(jjj).temp_data = temppar_comp;
+    current_sheets(jjj).etemp_data = etemppar_comp;
+    current_sheets(jjj).tempperp_data = tempperp_comp;
+    current_sheets(jjj).etempperp_data = etempperp_comp;
+    current_sheets(jjj).p_data = p_comp;
+    current_sheets(jjj).ep_data = ep_comp;
+
     current_sheets(jjj).pos = pos;
     current_sheets(jjj).ti = ti;
     current_sheets(jjj).te = te;
