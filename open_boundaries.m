@@ -1,77 +1,45 @@
-% load('walen_analysis/cs_vx.mat')
-% load('walen_analysis/cs_vy.mat')
-% load('walen_analysis/cs_vz.mat')
-% load('walen_analysis/cs_jumps_tot')
-% load('walen_analysis/v_jumps_totx')
-% load('walen_analysis/va_jumps_totx')
-% load('walen_analysis/v_jumps_toty')
-% load('walen_analysis/va_jumps_toty')
-% load('walen_analysis/v_jumps_totz')
-% load('walen_analysis/va_jumps_totz')
-% load('walen_analysis/v_jumps2')
-% load('walen_analysis/va_jumps2')
-% load('walen_analysis/tags')
-% load('walen_analysis/cs_loc')
-% load('walen_analysis/cs_Bpar')    
-% load('walen_analysis/cs_Bperp')    
-% load('walen_analysis/cs_eigrats')    
-% load('walen_analysis/cs_n1_nt')   
-% load('walen_analysis/cs_rho_enh')
-% %load('walen_analysis/cs_temp_enh') 
-% load('walen_analysis/cs_p_enh') 
-% load('walen_analysis/cs_norm_vx')
-% load('walen_analysis/cs_wal_len')
-% load('walen_analysis/cs_beta')
-% load('walen_analysis/press_balls_std')
-% load('walen_analysis/cs_Bmag')
-% load('walen_analysos/cs_shear')
-
-load('cs_vx.mat')
-load('cs_vy.mat')
-load('cs_vz.mat')
-load('cs_jumps_tot')
-load('v_jumps_totx')
-load('va_jumps_totx')
-load('v_jumps_toty')
-load('va_jumps_toty')
-load('v_jumps_totz')
-load('va_jumps_totz')
-load('v_jumps2')
-load('va_jumps2')
-load('tags')
-load('cs_loc')
-load('cs_Bpar')    
-load('cs_Bperp')    
-load('cs_eigrats')    
-load('cs_n1_nt')   
-load('cs_rho_enh')
-load('cs_p_enh') 
-load('cs_norm_vx')
-load('cs_wal_len')
-load('cs_beta')
-load('press_balls_std')
-load('cs_Bmag')
-load('cs_shear')
+load('walen_analysis/cs_vx.mat')
+load('walen_analysis/cs_vy.mat')
+load('walen_analysis/cs_vz.mat')
+load('walen_analysis/cs_jumps_tot')
+load('walen_analysis/v_jumps_totx')
+load('walen_analysis/va_jumps_totx')
+load('walen_analysis/v_jumps_toty')
+load('walen_analysis/va_jumps_toty')
+load('walen_analysis/v_jumps_totz')
+load('walen_analysis/va_jumps_totz')
+load('walen_analysis/v_jumps2')
+load('walen_analysis/va_jumps2')
+load('walen_analysis/tags')
+load('walen_analysis/cs_loc')
+load('walen_analysis/cs_Bpar')    
+load('walen_analysis/cs_Bperp')    
+load('walen_analysis/cs_eigrats')    
+load('walen_analysis/cs_n1_nt')   
+load('walen_analysis/cs_rho_enh')
+load('walen_analysis/cs_temp_enh') 
+load('walen_analysis/cs_p_enh') 
+load('walen_analysis/cs_norm_vx')
+load('walen_analysis/cs_wal_len')
+load('walen_analysis/press_balls_std')
+load('walen_analysis/cs_Bmag')
+load('walen_analysis/cs_shear')
+load('walen_analysis/cs_len')
 
 mu = 4*pi*10^(-7);
-cs = 381;
+cs = length(cs_shear);
 
 v_jumps_tot = sqrt(v_jumps_totx.^2+v_jumps_toty.^2+v_jumps_totz.^2);
 cs_v = sqrt(cs_vx.^2+cs_vy.^2+cs_vz.^2);
 
-press_balls_left = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1.602e-19)*cs_rho_enh(:,1).*cs_temp_enh(:,1);
-press_balls_right = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1.602e-19)*cs_rho_enh(:,2).*cs_temp_enh(:,2);
-%press_balls_left = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1e-9)*cs_p_enh(:,1);
-%press_balls_right = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1e-9)*cs_p_enh(:,2);
+press_balls_left = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1e-9)*cs_p_enh(:,1);
+press_balls_right = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1e-9)*cs_p_enh(:,2);
+pressure_balance = press_balls_left./press_balls_right;
 
-lpu = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1.602e-19)*cs_rho_enh(:,1).*(cs_temp_enh(:,1)+press_balls_std(:,1));
-lpd = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1.602e-19)*cs_rho_enh(:,1).*(cs_temp_enh(:,1)-press_balls_std(:,1));
-rpu = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1.602e-19)*cs_rho_enh(:,2).*(cs_temp_enh(:,2)+press_balls_std(:,2));
-rpd = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1.602e-19)*cs_rho_enh(:,2).*(cs_temp_enh(:,2)-press_balls_std(:,2));
-% lpu = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1e-9)*(cs_p_enh(:,1)+press_balls_std(:,1));
-% lpd = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1e-9)*(cs_p_enh(:,1)-press_balls_std(:,1));
-% rpu = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1e-9)*(cs_p_enh(:,2)+press_balls_std(:,2));
-% rpd = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1e-9)*(cs_p_enh(:,2)-press_balls_std(:,2));
+lpu = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1e-9)*(cs_p_enh(:,1)+press_balls_std(:,1));
+lpd = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1e-9)*(cs_p_enh(:,1)-press_balls_std(:,1));
+rpu = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1e-9)*(cs_p_enh(:,2)+press_balls_std(:,2));
+rpd = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1e-9)*(cs_p_enh(:,2)-press_balls_std(:,2));
 
 press_balls_left_errup = abs(press_balls_left - lpu);
 press_balls_left_errdown = abs(press_balls_left - lpd);
@@ -131,43 +99,33 @@ for i = 1:cs
     end       
 end
 
-% 
-% figure
-% scatter(cs_v,press_balls_left./press_balls_right,'k.');
-
-pleft = cs_temp_enh(:,1).*cs_rho_enh(:,1);
-pright = cs_temp_enh(:,2).*cs_rho_enh(:,2);
+pleft = cs_p_enh(:,1);
+pright = cs_p_enh(:,2);
 bstronger = cs_Bmag(:,1) > cs_Bmag(:,2);
-
 pweaker = pleft < pright;
-fixable = pweaker == bstronger;
+fixable = pweaker == bstronger  & ~(pressure_balance > 0.95 & pressure_balance < 1.05);
 
-% set(gca,'XScale','log')
-% 
-fix_fact = (1/(2*mu*(1.602e-19)))*((1e-18)*cs_Bmag(fixable,2) - (1e-18)*cs_Bmag(fixable,1))./...
-    (cs_rho_enh(fixable,1).*cs_temp_enh(fixable,1)-cs_rho_enh(fixable,2).*cs_temp_enh(fixable,2))-1;
-% 
-% figure
-% scatter(fix_fact,cs_rho_enh(fixable,3).*cs_temp_enh(fixable,3),'k.')
-% figure
-% scatter(fix_fact,cs_rho_enh(fixable,3),'k.')
-% figure
-% scatter(fix_fact,cs_vx(fixable),'k.')
-% figure
-% scatter(fix_fact,(cs_Bmag(fixable,1)+cs_Bmag(fixable,2))/2,'k.')
+fix_fact = (1/(2*mu*(1e-9)))*((1e-18)*cs_Bmag(fixable,2) - (1e-18)*cs_Bmag(fixable,1))./...
+     (cs_p_enh(fixable,1)-cs_p_enh(fixable,2))-1;
 
-% press_balls_left(fixable) = (1e-18)*cs_Bmag(fixable,1)/(2*mu) + (1.602e-19)*cs_rho_enh(fixable,1).*(cs_temp_enh(fixable,1).*(1+fix_fact));
-% press_balls_right(fixable) = (1e-18)*cs_Bmag(fixable,2)/(2*mu) + (1.602e-19)*cs_rho_enh(fixable,2).*(cs_temp_enh(fixable,2).*(1+fix_fact));
-%  figure
-%  scatter(press_balls_left(cs_Bmag(:,1) > cs_Bmag(:,2)),press_balls_right(cs_Bmag(:,1) > cs_Bmag(:,2)),'k.')
-%  scatter(press_balls_right(cs_Bmag(:,1) < cs_Bmag(:,2)),press_balls_left(cs_Bmag(:,1) < cs_Bmag(:,2)),'k.')
-%  daspect([1 1 1])
-%  xlabel('(p+B^2/2\mu)_{stronger}')
-%  ylabel('(p+B^2/2\mu)_{weaker}')
-%  title('fixed pressure balance')
-pressure_balance = press_balls_left./press_balls_right;
-%cs_temp_enh(fixable,1) = cs_temp_enh(fixable,1).*(1+fix_fact);
-%cs_temp_enh(fixable,2) = cs_temp_enh(fixable,2).*(1+fix_fact);
+press_balls_left(fixable) = (1e-18)*cs_Bmag(fixable,1)/(2*mu) + (1e-9)*cs_p_enh(fixable,1).*(1+fix_fact);
+press_balls_right(fixable) = (1e-18)*cs_Bmag(fixable,2)/(2*mu) + (1e-9)*cs_p_enh(fixable,2).*(1+fix_fact);
+fixed_pressure_balance = press_balls_left./press_balls_right;
+
+figure
+scatter(press_balls_left(cs_Bmag(:,1) > cs_Bmag(:,2)),press_balls_right(cs_Bmag(:,1) > cs_Bmag(:,2)),'k.')
+scatter(press_balls_right(cs_Bmag(:,1) < cs_Bmag(:,2)),press_balls_left(cs_Bmag(:,1) < cs_Bmag(:,2)),'k.')
+daspect([1 1 1])
+xlabel('(p+B^2/2\mu)_{stronger}')
+ylabel('(p+B^2/2\mu)_{weaker}')
+title('fixed pressure balance')
+
+cs_p_enh(fixable,1) = cs_p_enh(fixable,1).*(1+fix_fact);
+cs_p_enh(fixable,2) = cs_p_enh(fixable,2).*(1+fix_fact);
+
+ fixed_cs_beta(:,1) = (1e-9)*2*mu*cs_p_enh(:,1)./((1e-18)*cs_Bmag(:,1));
+ fixed_cs_beta(:,2) = (1e-9)*2*mu*cs_p_enh(:,2)./((1e-18)*cs_Bmag(:,2));
+ beta_fmean = mean(fixed_cs_beta,2);
 
 figure
 scatter(max(cs_Bmag'),min(cs_Bmag'),'k.')
@@ -179,30 +137,15 @@ title('B^2')
 orang = [246/255 103/255 51/255];
 purp = [82/255 45/255 128/255];
 
-ion_length = (3e8*1./sqrt(min(cs_rho_enh,[],2)*(1.6e-19)^2/(1.67e-27*8.9e-12)))/1000;
-
-% va_jumps_totx = (10^-12)*va_jumps_totx./sqrt(mu*(1.67*10^(-27)));
-% va_jumps_toty = (10^-12)*va_jumps_toty./sqrt(mu*(1.67*10^(-27)));
-% va_jumps_totz = (10^-12)*va_jumps_totz./sqrt(mu*(1.67*10^(-27)));
-
-% figure; hold on
-% cooond = abs(cs_n1_nt)>0.7 & cs_eigrats > 5;
-% histogram((cs_inds(cs_v<450 & cooond,1) - cs_inds(cs_v<450 & cooond,2))/128.*...
-%     cs_vx(cs_v<450 & cooond).*sin(cs_norm_vx(cs_v<450 & cooond))./ion_length(cs_v<450 & cooond),16,'BinLimits',[0 80])
-% histogram((cs_inds(cs_v>450 & cooond,1) - cs_inds(cs_v>450 & cooond,2))/128.*...
-%     cs_vx(cs_v>450 & cooond).*sin(cs_norm_vx(cs_v>450 & cooond))./ion_length(cs_v>450 & cooond),16,'BinLimits',[0 80])
-% legend('v<450','v>450')
-% xlabel('\lambda_i')
-% title('current sheet width')
+ion_length = (3e8*1./sqrt(mean(cs_rho_enh,2)*(1.6e-19)^2/(1.67e-27*8.9e-12)))/1000;
 
 figure
 histogram(180*acos(cs_shear)/pi)
 title('magnetic shear')
 xlabel('$\theta$','interpreter','latex')
 
-bigbeta = cs_beta(:,3);
 figure
-histogram(bigbeta(bigbeta < 40),'BinWidth',2)
+histogram(beta_fmean(beta_fmean < 30),'BinWidth',2)
 title('plasma Beta')
 xlabel('$\beta$','interpreter','latex')
 
@@ -235,52 +178,43 @@ end
 
 figure; hold on;
 diff_rho = 2*(cs_rho_enh(:,1)-cs_rho_enh(:,2))./(cs_rho_enh(:,1)+cs_rho_enh(:,2));
-diff_p = 2*(cs_temp_enh(:,1).*cs_rho_enh(:,1)-cs_temp_enh(:,2).*cs_rho_enh(:,2))./...
-    (cs_temp_enh(:,1).*cs_rho_enh(:,1)+cs_temp_enh(:,2).*cs_rho_enh(:,2));
-cooond4 = ((diff_rho > 0 & diff_p > 0 & cs_Bmag(:,2) > cs_Bmag(:,1)) | (diff_rho < 0 & diff_p < 0  & cs_Bmag(:,1) > cs_Bmag(:,2)));
-coooond4 = pressure_balance < 1.05 & pressure_balance > 0.95;
-%coooond4 = ones(size(cooond4));
-scatter(diff_p(~cooond4 & coooond4 & diff_rho > 0),diff_rho(~cooond4 & coooond4 & diff_rho > 0),100,'r.')
-scatter(diff_p(cooond4 & coooond4 &diff_rho > 0),diff_rho(cooond4 & coooond4 & diff_rho > 0),100,'b.')
-scatter(-diff_p(~cooond4 & coooond4 & diff_rho < 0),-diff_rho(~cooond4 & coooond4 & diff_rho < 0),100,'r.')
-scatter(-diff_p(cooond4 & coooond4 &diff_rho < 0),-diff_rho(cooond4 & coooond4 & diff_rho < 0),100,'b.')
-scatter(diff_p(cooond4 & coooond4 &diff_rho > 0 & abs(diff_p) > 0.05 & abs(diff_rho) > 0.05),diff_rho(cooond4 & coooond4 & diff_rho > 0 & abs(diff_p) > 0.05 & abs(diff_rho) > 0.05),100,'g.')
-scatter(-diff_p(cooond4 & coooond4 &diff_rho < 0 & abs(diff_p) > 0.05 & abs(diff_rho) > 0.05),-diff_rho(cooond4 & coooond4 & diff_rho < 0 & abs(diff_p) > 0.05 & abs(diff_rho) > 0.05),100,'g.')
-xlabel('\Delta p/p_0')
+diff_B = 2*(sqrt(cs_Bmag(:,1))-sqrt(cs_Bmag(:,2)))./(sqrt(cs_Bmag(:,1))+sqrt(cs_Bmag(:,2)));
+outflow_cond = ((diff_rho > 0 & diff_B < 0) | (diff_rho < 0 & diff_B > 0));
+fpbal_cond = fixed_pressure_balance < 1.05 & fixed_pressure_balance > 0.95;
+coooond5 = pressure_balance < 1.05 & pressure_balance > 0.95;
+scatter(diff_B(~outflow_cond & fpbal_cond & diff_rho > 0),diff_rho(~outflow_cond & fpbal_cond & diff_rho > 0),100,'r.')
+scatter(diff_B(outflow_cond & fpbal_cond & diff_rho > 0),diff_rho(outflow_cond & fpbal_cond & diff_rho > 0),100,'g.')
+scatter(diff_B(outflow_cond & coooond5 & diff_rho > 0),diff_rho(outflow_cond & coooond5 & diff_rho > 0),100,'b.')
+scatter(-diff_B(~outflow_cond & fpbal_cond & diff_rho < 0),-diff_rho(~outflow_cond & fpbal_cond & diff_rho < 0),100,'r.')
+scatter(-diff_B(outflow_cond & fpbal_cond &diff_rho < 0),-diff_rho(outflow_cond & fpbal_cond & diff_rho < 0),100,'g.')
+scatter(-diff_B(outflow_cond & coooond5 &diff_rho < 0),-diff_rho(outflow_cond & coooond5 & diff_rho < 0),100,'b.')
+xlabel('\Delta B/B_0')
 ylabel('(n_{larger} - n_{smaller})/n_0')
-plot([0.05 0.05],[0.0001 1],'k')
-plot([-0.6 0.6],[0.05 0.05],'k')
-axis([-0.6 0.6 0 1])
-set(gca,'YScale','log')
-legend('\Delta |B| > 0','\Delta |B| < 0')
+axis([-1 1 0 0.25])
 title('changes in average quantities')
+legend('inconsistent','p correction - consistent','consistent')
 
 % figure; hold on;
-% diff_rho = 2*(cs_rho_enh(:,1)-cs_rho_enh(:,2))./(cs_rho_enh(:,1)+cs_rho_enh(:,2));
-% diff_p = 2*(cs_p_enh(:,1)-cs_p_enh(:,2))./(cs_p_enh(:,1)+cs_p_enh(:,2));
-% cooond4 = ((diff_rho > 0 & diff_p > 0 & cs_Bmag(:,2) > cs_Bmag(:,1)) | (diff_rho < 0 & diff_p < 0  & cs_Bmag(:,1) > cs_Bmag(:,2)));
-% coooond4 = pressure_balance < 1.05 & pressure_balance > 0.95;
-% scatter(diff_p(~cooond4 & coooond4 & diff_rho > 0),diff_rho(~cooond4 & coooond4 & diff_rho > 0),100,'r.')
-% scatter(diff_p(cooond4 & coooond4 &diff_rho > 0),diff_rho(cooond4 & coooond4 & diff_rho > 0),100,'b.')
-% scatter(-diff_p(~cooond4 & coooond4 & diff_rho < 0),-diff_rho(~cooond4 & coooond4 & diff_rho < 0),100,'r.')
-% scatter(-diff_p(cooond4 & coooond4 &diff_rho < 0),-diff_rho(cooond4 & coooond4 & diff_rho < 0),100,'b.')
-% xlabel('\Delta p/p_0')
-% ylabel('(n_{larger} - n_{smaller})/n_0')
-% plot([0 0],[-1 1],'k')
-% axis([-0.4 0.4 0 1])
-% set(gca,'YScale','log')
-% legend('\Delta |B| > 0','\Delta |B| < 0')
-% title('changes in average quantities')
+% scatter(diff_B(fpbal_cond & diff_rho > 0 & walen_cond),diff_rho(fpbal_cond & diff_rho > 0 & walen_cond),[],...
+%     log10(cs_Bpar(fpbal_cond & diff_rho > 0 & walen_cond)./blarger(fpbal_cond & diff_rho > 0 & walen_cond)),'o','fillled')
+% scatter(diff_B(fpbal_cond & diff_rho > 0 & ~walen_cond),diff_rho(fpbal_cond & diff_rho > 0 & ~walen_cond),[],...
+%     log10(cs_Bpar(fpbal_cond & diff_rho > 0 & ~walen_cond)./blarger(fpbal_cond & diff_rho > 0 & ~walen_cond)),'p','fillled')
+% scatter(-diff_B(fpbal_cond & diff_rho < 0 & walen_cond),-diff_rho(fpbal_cond & diff_rho < 0 & walen_cond),[],...
+%     log10(cs_Bpar(fpbal_cond & diff_rho < 0 & walen_cond)./blarger(fpbal_cond & diff_rho < 0 & walen_cond)),'o','filled')
+% scatter(-diff_B(fpbal_cond & diff_rho < 0 & ~walen_cond),-diff_rho(fpbal_cond & diff_rho < 0 & ~walen_cond),[],...
+%     log10(cs_Bpar(fpbal_cond & diff_rho < 0 & ~walen_cond)./blarger(fpbal_cond & diff_rho < 0 & ~walen_cond)),'p','filled')
+% axis([-1 1 0 0.25])
+
 
 figure; hold on;
-cooond = ord_vajump(:,3)>0 & ord_vjump(:,3) > 0;
-sum(cooond)
+walen_cond = ord_vajump(:,3)>0 & ord_vjump(:,3) > 0;
+sum(walen_cond)
 'number of walen relationers'
-scatter(ord_vajump(cooond,3),ord_vjump(cooond,3),100,'b.')
-scatter(ord_vajump_tot(cooond,3),ord_vjump_tot(cooond,3),100,'r.')
-slopex2 = ord_vajump(cooond,3)\ord_vjump(cooond,3);
-fz = slopex2.*ord_vjump(cooond,3);
-[gz ,~] = rsquare(ord_vajump(cooond,3),fz);
+scatter(ord_vajump(walen_cond,3),ord_vjump(walen_cond,3),100,'b.')
+scatter(ord_vajump_tot(walen_cond,3),ord_vjump_tot(walen_cond,3),100,'r.')
+slopex2 = ord_vajump(walen_cond,3)\ord_vjump(walen_cond,3);
+fz = slopex2.*ord_vjump(walen_cond,3);
+[gz ,~] = rsquare(ord_vajump(walen_cond,3),fz);
 plot([0 100],[0 100],'Color','k')
 plot([0 100],[0 slopex2*100],'Color','b')
 daspect([1 1 1])
@@ -295,56 +229,192 @@ axis([0 50 0 50])
 legend('sub-layer','whole layer','Location','Southeast')
 
 figure; hold on;
-cooond2 = ((abs(cs_n1_nt)>0.7 & cs_eigrats > 5) | cs_eigrats > 10);
+dir_cond = ((abs(cs_n1_nt)>0.7 & cs_eigrats > 5) | cs_eigrats > 10);
 'number walen relationers and good boundary normal'
-sum(cooond & cooond2)
-blarger = max(cs_Bmag');
-histogram(cs_Bpar(cooond & cooond2)./(blarger(cooond & cooond2)'),'BinWidth',0.03)
+sum(walen_cond& dir_cond)
+blarger = max(cs_Bmag,[],2);
+histogram(cs_Bpar(walen_cond& dir_cond)./(blarger(walen_cond& dir_cond)),'BinWidth',0.03)
 title('B$_n/|\mathbf{B}|$ Alfvenic layers','interpreter','latex')
 
 figure; hold on;
-histogram(cs_Bpar(cooond & cooond2 & cooond4 & coooond4)./(blarger(cooond & cooond2 & cooond4 & coooond4)'),'BinWidth',0.03)
+histogram(cs_Bpar(walen_cond & dir_cond & outflow_cond & fpbal_cond)./(blarger(walen_cond& dir_cond & outflow_cond & fpbal_cond)),'BinWidth',0.03)
 title('B$_n/| \mathbf{B}|$ All reconnection signatures','interpreter','latex')
 
+
 figure; hold on
-histogram(-cs_wal_len(cooond & cooond2)/6.67.*cs_vx(cooond & cooond2).*...
-    sin(cs_norm_vx(cooond & cooond2))./ion_length(cooond & cooond2))%,16,'BinLimits',[0 80])
+histogram(-cs_wal_len(walen_cond& dir_cond)/6.67.*cs_vx(walen_cond& dir_cond).*...
+    sin(cs_norm_vx(walen_cond& dir_cond))./ion_length(walen_cond& dir_cond))%,16,'BinLimits',[0 80])
 xlabel('\lambda_i')
 title('good walen relation interval')
 
 figure; hold on
-histogram(-cs_wal_len(cooond & cooond2)/6.67.*cs_vx(cooond & cooond2).*...
-    sin(cs_norm_vx(cooond & cooond2))./(sqrt(cs_beta(cooond & cooond2,3)).*ion_length(cooond & cooond2)))%,16,'BinLimits',[0 80])
+histogram(-cs_wal_len(walen_cond& dir_cond)/6.67.*cs_vx(walen_cond& dir_cond).*...
+    sin(cs_norm_vx(walen_cond& dir_cond))./(sqrt(beta_fmean(walen_cond& dir_cond)).*ion_length(walen_cond& dir_cond)))%,16,'BinLimits',[0 80])
 xlabel('r_{gi}')
 title('good walen relation interval')
 
 figure; hold on
- diff_S = 2*(cs_temp_enh(:,1)./cs_rho_enh(:,1).^(2/3)-cs_temp_enh(:,2)./cs_rho_enh(:,2).^(2/3))./...
-     (cs_temp_enh(:,1)./cs_rho_enh(:,1).^(2/3)+cs_temp_enh(:,2)./cs_rho_enh(:,2).^(2/3));
-%  diff_S = 2*((1e-9)*cs_p_enh(:,1)./cs_rho_enh(:,1).^(5/3)-(1e-9)*cs_p_enh(:,2)./cs_rho_enh(:,2).^(5/3))./...
-%      ((1e-9)*cs_p_enh(:,1)./cs_rho_enh(:,1).^(5/3)+(1e-9)*cs_p_enh(:,2)./cs_rho_enh(:,2).^(5/3));
-coooond4 = pressure_balance < 1.05 & pressure_balance > 0.95;
-scatter(cs_beta(coooond4 & cs_beta(:,3)<30,3),abs(diff_S(coooond4 & cs_beta(:,3)<30)),[],'b.')
-%xlim([0 30])
-%ylim([0 0.5])
+diff_S = 2*((1e-9)*cs_p_enh(:,1)./cs_rho_enh(:,1).^(5/3)-(1e-9)*cs_p_enh(:,2)./cs_rho_enh(:,2).^(5/3))./...
+      ((1e-9)*cs_p_enh(:,1)./cs_rho_enh(:,1).^(5/3)+(1e-9)*cs_p_enh(:,2)./cs_rho_enh(:,2).^(5/3));
+scatter(beta_fmean(fpbal_cond & beta_fmean<30),abs(diff_S(fpbal_cond & beta_fmean<30)),[],'b.')
 title('Entropy Changes')
-
-% for i = 1:12
-%     cond = cs_beta(:,3) > (i-1)*2.5 & cs_beta(:,3) < i*2.5;
-%     smean(i) = std(abs(diff_S(cond & coooond4)));
-% end
-
-for i = 1:12
-    cond = cs_beta(:,3) > (i-1)*2.5 & cs_beta(:,3) < i*2.5;
-    smean(i) = std(abs(diff_S(cond & coooond4)));
-end
-
-f = fit([1.25:2.5:28.75]',smean','exp1');
-plot(f,1.25:2.5:28.75,smean)
+beta_range = 2:2:20;
+smean = zeros(length(beta_range),1);
+stmean =  zeros(length(beta_range),1);
+for i = 1:length(beta_range)
+    cond = beta_fmean > beta_range(1)*(i-1) & beta_fmean < beta_range(1)*i;
+    if sum(cond) > 1
+        smean(i) = mean(abs(diff_S(cond & fpbal_cond & walen_cond & outflow_cond)));
+        stmean(i) = std(abs(diff_S(cond & fpbal_cond & walen_cond & outflow_cond)));
+    else
+        smean(i) = smean(i-1);
+        stmean(i) = stmean(i-1);
+    end
+end 
+gloop = find(isnan(smean));
+smean(gloop) = (smean(gloop-1)+smean(gloop+1))/2;
+f = fit(beta_range',smean,'exp1');
+errorbar(beta_range,f.a*exp(beta_range*f.b),stmean,'r')
 ylabel('\Delta S/S_0')
 xlabel('\beta')
+ylim([0 0.4])
+xlim([0 20])
 
+figure; hold on
+scatter(beta_fmean(fpbal_cond & beta_fmean<30),...
+    abs(diff_rho(fpbal_cond & beta_fmean<30)),[],'b.')
+title('Density Changes')
+for i = 1:length(beta_range)
+    cond = beta_fmean > beta_range(1)*(i-1) & beta_fmean < beta_range(1)*i;
+    if sum(cond) > 1
+        smean(i) = mean(abs(diff_rho(cond & fpbal_cond)));
+        stmean(i) = std(abs(diff_rho(cond & fpbal_cond)));
+    else
+        smean(i) = smean(i-1);
+        stmean(i) = stmean(i-1);
+    end
+end
+smean(gloop) = (smean(gloop-1)+smean(gloop+1))/2;
+f = fit(beta_range',smean,'exp1');
+errorbar(beta_range,f.a*exp(beta_range*f.b),stmean,'r')
+ylabel('\Delta \rho/\rho_0')
+xlabel('\beta')
+ylim([0 0.4])
+xlim([0 20])
 
+figure; hold on
+scatter(cs_Bpar(dir_cond & walen_cond)./blarger(dir_cond & walen_cond),...
+    abs(diff_rho(dir_cond & walen_cond)),'b.')
+scatter(cs_Bpar(dir_cond & ~walen_cond)./blarger(dir_cond & ~walen_cond),...
+    abs(diff_rho(dir_cond & ~walen_cond)),'r.')
+bn_range = 0.01:.01:0.1;
+smean = zeros(length(bn_range),1);
+ssmean = zeros(length(bn_range),1);
+stmean =  zeros(length(bn_range),1);
+sstmean = zeros(length(bn_range),1);
+for i = 1:length(bn_range)
+    cond = cs_Bpar./blarger > bn_range(1)*(i-1) & cs_Bpar./blarger < bn_range(1)*i;
+    if sum(cond & walen_cond) > 1
+        smean(i) = mean(abs(diff_rho(cond & walen_cond)));
+        stmean(i) = std(abs(diff_rho(cond & walen_cond)));
+    else
+        smean(i) = smean(i-1);
+        stmean(i) = stmean(i-1);
+    end
+    if sum(cond & ~walen_cond) > 1
+        ssmean(i) = mean(abs(diff_rho(cond & ~walen_cond)));
+        sstmean(i) = std(abs(diff_rho(cond & ~walen_cond)));
+    else
+        ssmean(i) = ssmean(i-1);
+        sstmean(i) = sstmean(i-1);
+    end
+end
+f = fit(bn_range',smean,'exp1');
+plot([0,bn_range],f.a*exp([0,bn_range]*f.b),'b')
+errorbar(bn_range,f.a*exp(bn_range*f.b),stmean.^1.5,'b')
+ff = fit(bn_range',ssmean,'exp1');
+plot([0,bn_range],ff.a*exp([0,bn_range]*ff.b),'r')
+errorbar(bn_range,ff.a*exp(bn_range*ff.b),sstmean.^1.5,'r')
+xlabel('B_n/|B|')
+ylabel('\Delta \rho/\rho_0')
+legend('good Walen relation','no Walen relation')
+axis([0 0.11 0 0.4])
 
+figure; hold on
+scatter(cs_Bpar(dir_cond & walen_cond & fpbal_cond)./blarger(dir_cond & walen_cond & fpbal_cond),...
+    abs(diff_S(dir_cond & walen_cond & fpbal_cond)),'b.')
+scatter(cs_Bpar(dir_cond & ~walen_cond & fpbal_cond)./blarger(dir_cond & ~walen_cond & fpbal_cond),...
+    abs(diff_S(dir_cond & ~walen_cond & fpbal_cond)),'r.')
+bn_range = 0.01:.01:0.1;
+smean = zeros(length(bn_range),1);
+ssmean = zeros(length(bn_range),1);
+stmean =  zeros(length(bn_range),1);
+sstmean = zeros(length(bn_range),1);
+for i = 1:length(bn_range)
+    cond = cs_Bpar./blarger > bn_range(1)*(i-1) & cs_Bpar./blarger < bn_range(1)*i & fpbal_cond;
+    if sum(cond & walen_cond) > 1
+        smean(i) = mean(abs(diff_S(cond & walen_cond)));
+        stmean(i) = std(abs(diff_S(cond & walen_cond)));
+    else
+        smean(i) = smean(i-1);
+        stmean(i) = stmean(i-1);
+    end
+    if sum(cond & ~walen_cond) > 1
+        ssmean(i) = mean(abs(diff_S(cond & ~walen_cond)));
+        sstmean(i) = std(abs(diff_S(cond & ~walen_cond)));
+    else
+        ssmean(i) = ssmean(i-1);
+        sstmean(i) = sstmean(i-1);
+    end
+end
+f = fit(bn_range',smean,'exp1');
+plot([0,bn_range],f.a*exp([0,bn_range]*f.b),'b')
+errorbar(bn_range,f.a*exp(bn_range*f.b),stmean.^2,'b')
+ff = fit(bn_range',ssmean,'exp1');
+plot([0,bn_range],ff.a*exp([0,bn_range]*ff.b),'r')
+errorbar(bn_range,ff.a*exp(bn_range*ff.b),sstmean.^2,'r')
+xlabel('B_n/|B|')
+ylabel('\Delta S/S_0')
+legend('good Walen relation','no Walen relation')
+axis([0 0.11 0 0.4])
 
+figure; hold on
+scatter(cs_Bpar(dir_cond & walen_cond)./blarger(dir_cond & walen_cond),...
+    abs(diff_B(dir_cond & walen_cond)),'b.')
+scatter(cs_Bpar(dir_cond & ~walen_cond)./blarger(dir_cond & ~walen_cond),...
+    abs(diff_B(dir_cond & ~walen_cond)),'r.')
+bn_range = 0.01:.01:0.1;
+smean = zeros(length(bn_range),1);
+ssmean = zeros(length(bn_range),1);
+stmean =  zeros(length(bn_range),1);
+sstmean = zeros(length(bn_range),1);
+% for i = 1:length(bn_range)
+%     cond = cs_Bpar./blarger > bn_range(1)*(i-1) & cs_Bpar./blarger < bn_range(1)*i;
+%     if sum(cond & walen_cond) > 1
+%         smean(i) = mean(abs(diff_B(cond & walen_cond)));
+%         stmean(i) = std(abs(diff_B(cond & walen_cond)));
+%     else
+%         smean(i) = smean(i-1);
+%         stmean(i) = stmean(i-1);
+%     end
+%     if sum(cond & ~walen_cond) > 1
+%         ssmean(i) = mean(abs(diff_B(cond & ~walen_cond)));
+%         sstmean(i) = std(abs(diff_B(cond & ~walen_cond)));
+%     else
+%         ssmean(i) = ssmean(i-1);
+%         sstmean(i) = sstmean(i-1);
+%     end
+% end
+% f = fit(bn_range',smean,'exp1');
+% plot([0,bn_range],f.a*exp([0,bn_range]*f.b),'b')
+% errorbar(bn_range,f.a*exp(bn_range*f.b),stmean.^2,'b')
+% ff = fit(bn_range',ssmean,'exp1');
+% plot([0,bn_range],ff.a*exp([0,bn_range]*ff.b),'r')
+% errorbar(bn_range,ff.a*exp(bn_range*ff.b),sstmean.^2,'r')
+xlabel('B_n/|B|')
+ylabel('\Delta B/B_0')
+legend('good Walen relation','no Walen relation')
+plot([0 0.11],[0.1 0.1],'k')
+plot([0.02 0.02],[0.1 0.6],'k')
+axis([0 0.11 0 0.6])
 

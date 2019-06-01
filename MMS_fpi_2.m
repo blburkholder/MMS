@@ -29,14 +29,15 @@ cs_temp_enh = zeros(381,3);
 cs_p_enh = zeros(381,3);
 cs_norm_vx = zeros(381,1);
 cs_wal_len = zeros(381,1);
-cs_beta = zeros(381,3);
+press_balls_std_T = zeros(381,2);
 press_balls_std = zeros(381,2);
 cs_shear = zeros(381,1);
+cs_len = zeros(381,1);
 cs = 0;
 
 %201 & 225 missing
 for jjj = [1:200,202:224,226:303]
-%for jjj = 251
+%for jjj = 137
     jjj
     BB = current_sheets(jjj).mag_data;
     vv = current_sheets(jjj).v_data;
@@ -54,6 +55,7 @@ for jjj = [1:200,202:224,226:303]
     fpi_sc = current_sheets(jjj).fpi_sc;
     sc = current_sheets(jjj).sc;
     missing = current_sheets(jjj).m;
+    current_density = current_sheets(jjj).curdens;
 
     %interpolating FPI data to same time stamps
      if fpi_sc > 1
@@ -239,18 +241,31 @@ for jjj = [1:200,202:224,226:303]
 %          subplot(4,1,3); hold on
 %          plot(t,rho,'k')
 %          plot_help('electron number density',t(1),t(end))
-%          %legend('n^-')
 %          ylabel('m^{-3}')
 %          subplot(4,1,4); hold on
 %          %plot(t,(1e-18)*bsqr/(2*mu),'k')
-%          plot(t,(1.602e-19)*rho.*temp,'k')
+%          %plot(t,(1.602e-19)*rho.*temp,'k')
+%          plot(t,1e-9*p,'k')
 %          %plot(t,(1e-18)*bsqr/(2*mu)+(1.602e-19)*rho.*temp,'k')
-%          plot_help('thermal pressure',t(1),t(end))
+%          plot_help_nice('thermal pressure',t(1),t(end))
 %          %legend('B^2/2\mu_0','p','p+B^2/2\mu_0')
 %          ylabel('Pa')
+%          subplot(5,1,5); hold on
+%          if sc == 4
+%             jx_int = interp1(jt,smooth(current_density(:,1),30),t);
+%             jy_int = interp1(jt,smooth(current_density(:,2),30),t);
+%             jz_int = interp1(jt,smooth(current_density(:,3),30),t);
+%             jpar = sum([jx_int,jy_int,jz_int].*[px,py,pz],2)./sqrt(px.^2+py.^2+pz.^2);
+%             jperp = sqrt(sum(cross([jx_int,jy_int,jz_int],[px,py,pz]).^2,2)./(px.^2+py.^2+pz.^2));
+%             plot(t,jpar)
+%             plot(t,jperp)
+%          end
+%          lg = legend('j_{||}','j_\perp');
+         %plot_help_nice('current density magnetic field aligned coordinates',t(1),t(end))
+            
 %          subplot(4,1,1) 
-%          fill([jti(w_ind111) jti(w_ind222) jti(w_ind222) jti(w_ind111)],[-10 -10  10 10],'c')
-%          set(gca,'children',flipud(get(gca,'children')))
+%           fill([jti(w_ind111) jti(w_ind222) jti(w_ind222) jti(w_ind111)],[-5 -5  10 10],'c')
+%           set(gca,'children',flipud(get(gca,'children')))
         %do analysis on each current sheet in this mms file
         for j = 1:csc
             cs = cs+1;
@@ -296,7 +311,7 @@ for jjj = [1:200,202:224,226:303]
             %left = ind1-5:ind1;
             %right = ind2:ind2+5;
             middle = ind1:ind2;
-            %subplot(5,1,3);
+            %subplot(4,1,3);
             %plot(t(left),rho(left),'r','LineWidth',2)
             %plot(t(right),rho(right),'b','LineWidth',2)
 
@@ -312,18 +327,11 @@ for jjj = [1:200,202:224,226:303]
 
             cs_Bmag(cs,1) = mean(bsqr(left));
             cs_Bmag(cs,2) = mean(bsqr(right));
-            cs_beta(cs,1) = (1.602e-19)*2*mu*cs_rho_enh(cs,1)*cs_temp_enh(cs,1)/((1e-18)*cs_Bmag(cs,1));
-            cs_beta(cs,2) = (1.602e-19)*2*mu*cs_rho_enh(cs,2)*cs_temp_enh(cs,2)/((1e-18)*cs_Bmag(cs,2));
-            cs_beta(cs,3) = (1.602e-19)*2*mu*cs_rho_enh(cs,3)*cs_temp_enh(cs,3)/((1e-18)*mean(bsqr(middle)));
 
-%             cs_beta(cs,1) = (1e-9)*2*mu*cs_p_enh(cs,1)/((1e-18)*cs_Bmag(cs,1));
-%             cs_beta(cs,2) = (1e-9)*2*mu*cs_p_enh(cs,2)/((1e-18)*cs_Bmag(cs,2));
-%             cs_beta(cs,3) = (1e-9)*2*mu*cs_p_enh(cs,3)/((1e-18)*mean(bsqr(middle)));
-
-            press_balls_std(cs,1) = std(temp(left));
-            press_balls_std(cs,2) = std(temp(right));
-%            press_balls_std(cs,1) = std(p(left));
-%            press_balls_std(cs,2) = std(p(right));
+            press_balls_std_T(cs,1) = std(temp(left));
+            press_balls_std_T(cs,2) = std(temp(right));
+            press_balls_std(cs,1) = std(p(left));
+            press_balls_std(cs,2) = std(p(right));
 
             %subplot(4,1,1);
 %            highlight whole event in black
@@ -456,6 +464,7 @@ for jjj = [1:200,202:224,226:303]
             cs_eigrats(cs) = er;
             cs_n1_nt(cs) = sum(n1.*nt);
             cs_norm_vx(cs) = acos(n1(1)/(n1(1)^2+n1(2)^2+n1(3)^2));
+            cs_len(cs) = 2*intervals(j,2);
 
             cs_jumps_tot(cs) = sqrt((max(pxi)-min(pxi))^2+(max(pyi)-min(pyi))^2+(max(pzi)-min(pzi))^2); 
 %             v_jumps_totx(cs) =  max(vxi)-min(vxi); 
@@ -474,7 +483,7 @@ for jjj = [1:200,202:224,226:303]
             va_jumps_totz(cs) =  max(varotated_z)-min(varotated_z); 
             cs_loc(cs,1) = x_int(1); cs_loc(cs,2) = y_int(1); cs_loc(cs,3) = z_int(1);
         end
-       %saveas(gcf,['ion_cadence/discont_',num2str(jjj),'.png'])
+       %saveas(gcf,['ion_cadence/discont1_',num2str(jjj),'.png'])
        %close all
      end
      %current_sheets(jjj).timing_normals = time_norms;
@@ -503,10 +512,11 @@ end
  save('cs_temp_enh','cs_temp_enh')
  save('cs_norm_vx','cs_norm_vx')   
  save('cs_wal_len','cs_wal_len')
- save('cs_beta','cs_beta')
  save('press_balls_std','press_balls_std')
+ save('press_balls_std_T','press_balls_std_T')
  save('cs_Bmag','cs_Bmag')
  save('cs_shear','cs_shear')
- open_boundaries
- toc
+save('cs_len','cs_len')
+% open_boundaries
+%  toc
  

@@ -22,7 +22,6 @@ for jjj = [1:200,202:224,226:303]
     %this function gets B and GSE position for all available spacecraft
     %[curlometer,single spacecraft,bx,by,bz,x,y,z, time vector, thing for path, number available spacecraft]
     [j1,j2,bx_int1,by_int1,bz_int1,x_int1,y_int1,z_int1,jt,B_tag,sc] = cur_dens(path1,B_path1,B_path2);
-
     B_path2 =  [B_path2,'_v5.',num2str(B_tag),'.0.cdf'];
     missing = 0;
 
@@ -60,12 +59,12 @@ for jjj = [1:200,202:224,226:303]
             eep = electro_data{33};
             ep = zeros(length(electro_data{23}),1);
             for jk = 1:length(electro_data{23})
-                ep(jk) = trace(eep(:,:,jk));
+                ep(jk) = trace(eep(:,:,jk))/3;
             end
             pp = data{29}; 
             p = zeros(length(pp),1);
             for jk = 1:length(pp)
-                p(jk) = trace(pp(:,:,jk));
+                p(jk) = trace(pp(:,:,jk))/3;
             end
 
             wind = 20+ceil(length(bulkv(:,1))/50);
@@ -81,9 +80,6 @@ for jjj = [1:200,202:224,226:303]
 
             p_comp(1:length(densi),fpi_sc) = smooth(hamperl(fft(hamperl(fft(p),wind)),wind),12);
             ep_comp(1:length(electro_data{23}),fpi_sc) = smooth(ep,30);
-
-%             p_comp(1:length(densi),fpi_sc) = smooth(hamperl(fft(densi.*(2*tempperp+temppar)/3),wind),12);
-%             ep_comp(1:length(electro_data{23}),fpi_sc) = smooth(numberdensity.*(2*etempperp+etemppar)/3,30);
        catch
             fprintf(['no MMS',num2str(i), 'FPI\n']);
             missing = i;
@@ -111,7 +107,7 @@ for jjj = [1:200,202:224,226:303]
     current_sheets(jjj).etempperp_data = etempperp_comp;
     current_sheets(jjj).p_data = p_comp;
     current_sheets(jjj).ep_data = ep_comp;
-
+    current_sheets(jjj).curdens = j1;
     current_sheets(jjj).pos = pos;
     current_sheets(jjj).ti = ti;
     current_sheets(jjj).te = te;
