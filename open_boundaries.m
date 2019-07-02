@@ -21,10 +21,14 @@ load('walen_analysis/cs_temp_enh')
 load('walen_analysis/cs_p_enh') 
 load('walen_analysis/cs_norm_vx')
 load('walen_analysis/cs_wal_len')
-load('walen_analysis/press_balls_std')
+load('walen_analysis/press_balls_std_B')
+load('walen_analysis/press_balls_std_p')
+load('walen_analysis/press_balls_std_n')
 load('walen_analysis/cs_Bmag')
 load('walen_analysis/cs_shear')
 load('walen_analysis/cs_len')
+
+
 
 mu = 4*pi*10^(-7);
 cs = length(cs_shear);
@@ -36,10 +40,10 @@ press_balls_left = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1e-9)*cs_p_enh(:,1);
 press_balls_right = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1e-9)*cs_p_enh(:,2);
 pressure_balance = press_balls_left./press_balls_right;
 
-lpu = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1e-9)*(cs_p_enh(:,1)+press_balls_std(:,1));
-lpd = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1e-9)*(cs_p_enh(:,1)-press_balls_std(:,1));
-rpu = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1e-9)*(cs_p_enh(:,2)+press_balls_std(:,2));
-rpd = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1e-9)*(cs_p_enh(:,2)-press_balls_std(:,2));
+lpu = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1e-9)*(cs_p_enh(:,1)+press_balls_std_p(:,1));
+lpd = (1e-18)*cs_Bmag(:,1)/(2*mu) + (1e-9)*(cs_p_enh(:,1)-press_balls_std_p(:,1));
+rpu = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1e-9)*(cs_p_enh(:,2)+press_balls_std_p(:,2));
+rpd = (1e-18)*cs_Bmag(:,2)/(2*mu) + (1e-9)*(cs_p_enh(:,2)-press_balls_std_p(:,2));
 
 press_balls_left_errup = abs(press_balls_left - lpu);
 press_balls_left_errdown = abs(press_balls_left - lpd);
@@ -137,7 +141,8 @@ title('B^2')
 orang = [246/255 103/255 51/255];
 purp = [82/255 45/255 128/255];
 
-ion_length = (3e8*1./sqrt(mean(cs_rho_enh,2)*(1.6e-19)^2/(1.67e-27*8.9e-12)))/1000;
+%includes alpha particles
+ion_length = (3e8*1./sqrt(mean(cs_rho_enh,2)*(1.6e-19)^2/(1.16*1.67e-27*8.9e-12)))/1000;
 
 figure
 histogram(180*acos(cs_shear)/pi)
@@ -179,20 +184,40 @@ end
 figure; hold on;
 diff_rho = 2*(cs_rho_enh(:,1)-cs_rho_enh(:,2))./(cs_rho_enh(:,1)+cs_rho_enh(:,2));
 diff_B = 2*(sqrt(cs_Bmag(:,1))-sqrt(cs_Bmag(:,2)))./(sqrt(cs_Bmag(:,1))+sqrt(cs_Bmag(:,2)));
+for i = 1:length(diff_rho)
+    if diff_rho(i) > 0
+        rho1_err(i) = cs_rho_enh(i,1)+press_balls_std_n(i,1);
+        rho2_err(i) = cs_rho_enh(i,2)-press_balls_std_n(i,2);
+    else
+        rho1_err(i) = cs_rho_enh(i,1)-press_balls_std_n(i,1);
+        rho2_err(i) = cs_rho_enh(i,2)+press_balls_std_n(i,2);
+    end
+    if diff_B(i) > 0
+        B1_err(i) = sqrt(cs_Bmag(i,1))+press_balls_std_B(i,1);
+        B2_err(i) = sqrt(cs_Bmag(i,2))-press_balls_std_B(i,2);
+    else
+        B1_err(i) = sqrt(cs_Bmag(i,1))-press_balls_std_B(i,1);
+        B2_err(i) = sqrt(cs_Bmag(i,2))+press_balls_std_B(i,2);
+    end
+end
+rhoerr = abs(2*abs(rho1_err' - rho2_err')./(rho1_err'+rho2_err')-abs(diff_rho));
+Berr = abs(2*abs(B1_err' - B2_err')./(B1_err'+B2_err')-abs(diff_B));
+rho_change = (diff_rho-rhoerr<0 & diff_rho > 0) | (diff_rho+rhoerr>0 & diff_rho < 0);
+B_change = (diff_B-Berr<0 & diff_B >0) | (diff_B+Berr>0 & diff_B < 0);
 outflow_cond = ((diff_rho > 0 & diff_B < 0) | (diff_rho < 0 & diff_B > 0));
 fpbal_cond = fixed_pressure_balance < 1.05 & fixed_pressure_balance > 0.95;
 coooond5 = pressure_balance < 1.05 & pressure_balance > 0.95;
 scatter(diff_B(~outflow_cond & fpbal_cond & diff_rho > 0),diff_rho(~outflow_cond & fpbal_cond & diff_rho > 0),100,'r.')
 scatter(diff_B(outflow_cond & fpbal_cond & diff_rho > 0),diff_rho(outflow_cond & fpbal_cond & diff_rho > 0),100,'g.')
-scatter(diff_B(outflow_cond & coooond5 & diff_rho > 0),diff_rho(outflow_cond & coooond5 & diff_rho > 0),100,'b.')
+scatter(diff_B(rho_change == 1 | B_change == 1 & diff_rho > 0 & fpbal_cond),diff_rho(rho_change == 1 | B_change == 1 & diff_rho > 0 & fpbal_cond),100,'k.')
 scatter(-diff_B(~outflow_cond & fpbal_cond & diff_rho < 0),-diff_rho(~outflow_cond & fpbal_cond & diff_rho < 0),100,'r.')
 scatter(-diff_B(outflow_cond & fpbal_cond &diff_rho < 0),-diff_rho(outflow_cond & fpbal_cond & diff_rho < 0),100,'g.')
-scatter(-diff_B(outflow_cond & coooond5 &diff_rho < 0),-diff_rho(outflow_cond & coooond5 & diff_rho < 0),100,'b.')
+scatter(-diff_B(rho_change == 1 | B_change == 1 & diff_rho < 0 & fpbal_cond),-diff_rho(rho_change == 1 | B_change == 1 & diff_rho < 0 & fpbal_cond),100,'k.')
 xlabel('\Delta B/B_0')
 ylabel('(n_{larger} - n_{smaller})/n_0')
 axis([-1 1 0 0.25])
 title('changes in average quantities')
-legend('inconsistent','p correction - consistent','consistent')
+legend('inconsistent','consistent','inconclusive')
 
 % figure; hold on;
 % scatter(diff_B(fpbal_cond & diff_rho > 0 & walen_cond),diff_rho(fpbal_cond & diff_rho > 0 & walen_cond),[],...
@@ -227,6 +252,13 @@ ylabel('\Delta v (km/s)')
 title('Walen Relation')
 axis([0 50 0 50])
 legend('sub-layer','whole layer','Location','Southeast')
+
+figure; hold on
+histogram(180/pi*acos(cs_shear(acos(cs_shear)*180/pi < 30 & walen_cond)),'BinWidth',10)
+histogram(180/pi*acos(cs_shear(acos(cs_shear)*180/pi < 30 & ~walen_cond)),'BinWidth',10)
+histogram(180/pi*acos(cs_shear(acos(cs_shear)*180/pi >= 30 & walen_cond)),'BinWidth',10)
+histogram(180/pi*acos(cs_shear(acos(cs_shear)*180/pi >= 30 & ~walen_cond)),'BinWidth',10)
+legend('small angle, good walen','small angle, no walen','large angle, good walen','large angle, no walen')
 
 figure; hold on;
 dir_cond = ((abs(cs_n1_nt)>0.7 & cs_eigrats > 5) | cs_eigrats > 10);
@@ -297,109 +329,71 @@ end
 smean(gloop) = (smean(gloop-1)+smean(gloop+1))/2;
 f = fit(beta_range',smean,'exp1');
 errorbar(beta_range,f.a*exp(beta_range*f.b),stmean,'r')
-ylabel('\Delta \rho/\rho_0')
+ylabel('\Delta n/n_0')
 xlabel('\beta')
 ylim([0 0.4])
 xlim([0 20])
 
-figure; hold on
-scatter(cs_Bpar(dir_cond & walen_cond)./blarger(dir_cond & walen_cond),...
-    abs(diff_rho(dir_cond & walen_cond)),'b.')
-scatter(cs_Bpar(dir_cond & ~walen_cond)./blarger(dir_cond & ~walen_cond),...
-    abs(diff_rho(dir_cond & ~walen_cond)),'r.')
-bn_range = 0.01:.01:0.1;
-smean = zeros(length(bn_range),1);
-ssmean = zeros(length(bn_range),1);
-stmean =  zeros(length(bn_range),1);
-sstmean = zeros(length(bn_range),1);
-for i = 1:length(bn_range)
-    cond = cs_Bpar./blarger > bn_range(1)*(i-1) & cs_Bpar./blarger < bn_range(1)*i;
-    if sum(cond & walen_cond) > 1
-        smean(i) = mean(abs(diff_rho(cond & walen_cond)));
-        stmean(i) = std(abs(diff_rho(cond & walen_cond)));
-    else
-        smean(i) = smean(i-1);
-        stmean(i) = stmean(i-1);
-    end
-    if sum(cond & ~walen_cond) > 1
-        ssmean(i) = mean(abs(diff_rho(cond & ~walen_cond)));
-        sstmean(i) = std(abs(diff_rho(cond & ~walen_cond)));
-    else
-        ssmean(i) = ssmean(i-1);
-        sstmean(i) = sstmean(i-1);
-    end
-end
-f = fit(bn_range',smean,'exp1');
-plot([0,bn_range],f.a*exp([0,bn_range]*f.b),'b')
-errorbar(bn_range,f.a*exp(bn_range*f.b),stmean.^1.5,'b')
-ff = fit(bn_range',ssmean,'exp1');
-plot([0,bn_range],ff.a*exp([0,bn_range]*ff.b),'r')
-errorbar(bn_range,ff.a*exp(bn_range*ff.b),sstmean.^1.5,'r')
-xlabel('B_n/|B|')
-ylabel('\Delta \rho/\rho_0')
-legend('good Walen relation','no Walen relation')
-axis([0 0.11 0 0.4])
-
-figure; hold on
-scatter(cs_Bpar(dir_cond & walen_cond & fpbal_cond)./blarger(dir_cond & walen_cond & fpbal_cond),...
-    abs(diff_S(dir_cond & walen_cond & fpbal_cond)),'b.')
-scatter(cs_Bpar(dir_cond & ~walen_cond & fpbal_cond)./blarger(dir_cond & ~walen_cond & fpbal_cond),...
-    abs(diff_S(dir_cond & ~walen_cond & fpbal_cond)),'r.')
-bn_range = 0.01:.01:0.1;
-smean = zeros(length(bn_range),1);
-ssmean = zeros(length(bn_range),1);
-stmean =  zeros(length(bn_range),1);
-sstmean = zeros(length(bn_range),1);
-for i = 1:length(bn_range)
-    cond = cs_Bpar./blarger > bn_range(1)*(i-1) & cs_Bpar./blarger < bn_range(1)*i & fpbal_cond;
-    if sum(cond & walen_cond) > 1
-        smean(i) = mean(abs(diff_S(cond & walen_cond)));
-        stmean(i) = std(abs(diff_S(cond & walen_cond)));
-    else
-        smean(i) = smean(i-1);
-        stmean(i) = stmean(i-1);
-    end
-    if sum(cond & ~walen_cond) > 1
-        ssmean(i) = mean(abs(diff_S(cond & ~walen_cond)));
-        sstmean(i) = std(abs(diff_S(cond & ~walen_cond)));
-    else
-        ssmean(i) = ssmean(i-1);
-        sstmean(i) = sstmean(i-1);
-    end
-end
-f = fit(bn_range',smean,'exp1');
-plot([0,bn_range],f.a*exp([0,bn_range]*f.b),'b')
-errorbar(bn_range,f.a*exp(bn_range*f.b),stmean.^2,'b')
-ff = fit(bn_range',ssmean,'exp1');
-plot([0,bn_range],ff.a*exp([0,bn_range]*ff.b),'r')
-errorbar(bn_range,ff.a*exp(bn_range*ff.b),sstmean.^2,'r')
-xlabel('B_n/|B|')
-ylabel('\Delta S/S_0')
-legend('good Walen relation','no Walen relation')
-axis([0 0.11 0 0.4])
-
-figure; hold on
-scatter(cs_Bpar(dir_cond & walen_cond)./blarger(dir_cond & walen_cond),...
-    abs(diff_B(dir_cond & walen_cond)),'b.')
-scatter(cs_Bpar(dir_cond & ~walen_cond)./blarger(dir_cond & ~walen_cond),...
-    abs(diff_B(dir_cond & ~walen_cond)),'r.')
-bn_range = 0.01:.01:0.1;
-smean = zeros(length(bn_range),1);
-ssmean = zeros(length(bn_range),1);
-stmean =  zeros(length(bn_range),1);
-sstmean = zeros(length(bn_range),1);
+% figure; hold on
+% scatter(cs_Bpar(dir_cond & walen_cond)./blarger(dir_cond & walen_cond),...
+%     abs(diff_rho(dir_cond & walen_cond)),'b.')
+% scatter(cs_Bpar(dir_cond & ~walen_cond)./blarger(dir_cond & ~walen_cond),...
+%     abs(diff_rho(dir_cond & ~walen_cond)),'r.')
+% bn_range = 0.01:.01:0.1;
+% smean = zeros(length(bn_range),1);
+% ssmean = zeros(length(bn_range),1);
+% stmean =  zeros(length(bn_range),1);
+% sstmean = zeros(length(bn_range),1);
 % for i = 1:length(bn_range)
 %     cond = cs_Bpar./blarger > bn_range(1)*(i-1) & cs_Bpar./blarger < bn_range(1)*i;
 %     if sum(cond & walen_cond) > 1
-%         smean(i) = mean(abs(diff_B(cond & walen_cond)));
-%         stmean(i) = std(abs(diff_B(cond & walen_cond)));
+%         smean(i) = mean(abs(diff_rho(cond & walen_cond)));
+%         stmean(i) = std(abs(diff_rho(cond & walen_cond)));
 %     else
 %         smean(i) = smean(i-1);
 %         stmean(i) = stmean(i-1);
 %     end
 %     if sum(cond & ~walen_cond) > 1
-%         ssmean(i) = mean(abs(diff_B(cond & ~walen_cond)));
-%         sstmean(i) = std(abs(diff_B(cond & ~walen_cond)));
+%         ssmean(i) = mean(abs(diff_rho(cond & ~walen_cond)));
+%         sstmean(i) = std(abs(diff_rho(cond & ~walen_cond)));
+%     else
+%         ssmean(i) = ssmean(i-1);
+%         sstmean(i) = sstmean(i-1);
+%     end
+% end
+% f = fit(bn_range',smean,'exp1');
+% plot([0,bn_range],f.a*exp([0,bn_range]*f.b),'b')
+% errorbar(bn_range,f.a*exp(bn_range*f.b),stmean.^1.5,'b')
+% ff = fit(bn_range',ssmean,'exp1');
+% plot([0,bn_range],ff.a*exp([0,bn_range]*ff.b),'r')
+% errorbar(bn_range,ff.a*exp(bn_range*ff.b),sstmean.^1.5,'r')
+% xlabel('B_n/|B|')
+% ylabel('\Delta \rho/\rho_0')
+% legend('good Walen relation','no Walen relation')
+% axis([0 0.11 0 0.4])
+% 
+% figure; hold on
+% scatter(cs_Bpar(dir_cond & walen_cond & fpbal_cond)./blarger(dir_cond & walen_cond & fpbal_cond),...
+%     abs(diff_S(dir_cond & walen_cond & fpbal_cond)),'b.')
+% scatter(cs_Bpar(dir_cond & ~walen_cond & fpbal_cond)./blarger(dir_cond & ~walen_cond & fpbal_cond),...
+%     abs(diff_S(dir_cond & ~walen_cond & fpbal_cond)),'r.')
+% bn_range = 0.01:.01:0.1;
+% smean = zeros(length(bn_range),1);
+% ssmean = zeros(length(bn_range),1);
+% stmean =  zeros(length(bn_range),1);
+% sstmean = zeros(length(bn_range),1);
+% for i = 1:length(bn_range)
+%     cond = cs_Bpar./blarger > bn_range(1)*(i-1) & cs_Bpar./blarger < bn_range(1)*i & fpbal_cond;
+%     if sum(cond & walen_cond) > 1
+%         smean(i) = mean(abs(diff_S(cond & walen_cond)));
+%         stmean(i) = std(abs(diff_S(cond & walen_cond)));
+%     else
+%         smean(i) = smean(i-1);
+%         stmean(i) = stmean(i-1);
+%     end
+%     if sum(cond & ~walen_cond) > 1
+%         ssmean(i) = mean(abs(diff_S(cond & ~walen_cond)));
+%         sstmean(i) = std(abs(diff_S(cond & ~walen_cond)));
 %     else
 %         ssmean(i) = ssmean(i-1);
 %         sstmean(i) = sstmean(i-1);
@@ -411,10 +405,33 @@ sstmean = zeros(length(bn_range),1);
 % ff = fit(bn_range',ssmean,'exp1');
 % plot([0,bn_range],ff.a*exp([0,bn_range]*ff.b),'r')
 % errorbar(bn_range,ff.a*exp(bn_range*ff.b),sstmean.^2,'r')
-xlabel('B_n/|B|')
-ylabel('\Delta B/B_0')
-legend('good Walen relation','no Walen relation')
-plot([0 0.11],[0.1 0.1],'k')
-plot([0.02 0.02],[0.1 0.6],'k')
-axis([0 0.11 0 0.6])
+% xlabel('B_n/|B|')
+% ylabel('\Delta S/S_0')
+% legend('good Walen relation','no Walen relation')
+% axis([0 0.11 0 0.4])
+% 
+% figure; hold on
+% scatter(cs_Bpar(dir_cond & walen_cond)./blarger(dir_cond & walen_cond),...
+%     abs(diff_B(dir_cond & walen_cond)),'b.')
+% scatter(cs_Bpar(dir_cond & ~walen_cond)./blarger(dir_cond & ~walen_cond),...
+%     abs(diff_B(dir_cond & ~walen_cond)),'r.')
+% xlabel('B_n/|B|')
+% ylabel('\Delta B/B_0')
+% legend('good Walen relation','no Walen relation')
+% plot([0 0.11],[0.1 0.1],'k')
+% plot([0.02 0.02],[0.1 0.6],'k')
+% axis([0 0.11 0 0.6])
+
+% figure; hold on
+% histogram(cs_v(walen_cond))
+% histogram(cs_v(~walen_cond))
+% legend('good walen','no walen')
+% xlabel('solar wind velocity')
+% 
+% figure; hold on
+% histogram(cs_v(strong == 1))
+% histogram(cs_v(strong == 0 & weak == 1))
+% legend('strong','weak')
+
+
 

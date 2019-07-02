@@ -5,39 +5,32 @@ mu = 4*pi*10^(-7);
 %intervals within the mms data files
 load('current_sheets.mat')
 %there are 381 current sheets within the 303 files
-cs_vx = zeros(381,1);
-cs_vy = zeros(381,1);
-cs_vz = zeros(381,1);
-v_jumps_totx = zeros(381,1);
-v_jumps_toty = zeros(381,1);
-v_jumps_totz = zeros(381,1);
-va_jumps_totx = zeros(381,1);
-va_jumps_toty = zeros(381,1);
-va_jumps_totz = zeros(381,1);
+cs_vx = zeros(381,1);cs_vy = zeros(381,1);cs_vz = zeros(381,1);
+v_jumps_totx = zeros(381,1);v_jumps_toty = zeros(381,1);v_jumps_totz = zeros(381,1);
+va_jumps_totx = zeros(381,1);va_jumps_toty = zeros(381,1);va_jumps_totz = zeros(381,1);
 cs_jumps_tot = zeros(381,1);
 v_jumps2 = zeros(381,3);
 va_jumps2 = zeros(381,3);
 cs_loc = zeros(381,3);
 tags = zeros(381,1);
 cs_eigrats = zeros(381,1);
-cs_Bperp = zeros(381,1);
-cs_Bpar = zeros(381,1);
-cs_Bmag = zeros(381,2);
+cs_Bperp = zeros(381,1);cs_Bpar = zeros(381,1);cs_Bmag = zeros(381,2);
 cs_n1_nt = zeros(381,1);
-cs_rho_enh = zeros(381,3);
-cs_temp_enh = zeros(381,3);
-cs_p_enh = zeros(381,3);
+cs_rho_enh = zeros(381,3);cs_temp_enh = zeros(381,3);cs_p_enh = zeros(381,3);
 cs_norm_vx = zeros(381,1);
 cs_wal_len = zeros(381,1);
-press_balls_std_T = zeros(381,2);
-press_balls_std = zeros(381,2);
+press_balls_std_B = zeros(381,2);press_balls_std_p = zeros(381,2);press_balls_std_n = zeros(381,2);
 cs_shear = zeros(381,1);
 cs_len = zeros(381,1);
+weak = zeros(381,1);
+strong = zeros(381,1);
 cs = 0;
+
+sw_mass = (1.67e-27)*1.16;
+fileID = fopen('dates_table.txt','w');
 
 %201 & 225 missing
 for jjj = [1:200,202:224,226:303]
-%for jjj = 137
     jjj
     BB = current_sheets(jjj).mag_data;
     vv = current_sheets(jjj).v_data;
@@ -194,8 +187,12 @@ for jjj = [1:200,202:224,226:303]
         %save('current_sheets','current_sheets')
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-        intervals = current_sheets(jjj).intervals;
-        [csc,~] = size(intervals);
+        intervals = current_sheets(jjj).interva
+
+        if csc > 0
+        y = ['start ',datestr(todatenum(cdfepoch(t(1)))),' end ',datestr(todatenum(cdfepoch(t(end))))];
+        fprintf(fileID,'%s\n',y);
+        end
 
         time_norms = current_sheets(jjj).timing_normals;
         %time_norms = zeros(csc,3); 
@@ -220,7 +217,7 @@ for jjj = [1:200,202:224,226:303]
 %         vz = vz - V_DHT(3);
 % % 
 %          figure('Visible','off','rend','painters','pos',[10 10 1000 800])
-% %         %figure('rend','painters','pos',[10 10 1000 800])
+%          figure('rend','painters','pos',[10 10 1000 800])
 %          subplot(4,1,1); hold on;
 %          plot(t,sqrt(mean(bx_int.^2+by_int.^2+bz_int.^2,2)),'k')
 %          plot_all_mms_B(t,bx_int,by_int,bz_int,sc)
@@ -232,9 +229,9 @@ for jjj = [1:200,202:224,226:303]
 %          plot(t,vx-nanmean(vx),'r')
 %          plot(t,vy-nanmean(vy),'g','HandleVisibility','off')
 %          plot(t,vz-nanmean(vz),'b','HandleVisibility','off')
-%          plot(t,(1/1000)*(10^-9)*(vax-mean(vax))/sqrt(mu*(1.67*10^(-27))),'r--')
-%          plot(t,(1/1000)*(10^-9)*(vay-mean(vay))/sqrt(mu*(1.67*10^(-27))),'g--','HandleVisibility','off')
-%          plot(t,(1/1000)*(10^-9)*(vaz-mean(vaz))/sqrt(mu*(1.67*10^(-27))),'b--','HandleVisibility','off')
+%          plot(t,(1/1000)*(10^-9)*(vax-mean(vax))/sqrt(mu*sw_mass),'r--')
+%          plot(t,(1/1000)*(10^-9)*(vay-mean(vay))/sqrt(mu*sw_mass),'g--','HandleVisibility','off')
+%          plot(t,(1/1000)*(10^-9)*(vaz-mean(vaz))/sqrt(mu*sw_mass),'b--','HandleVisibility','off')
 %          lg = legend('v_x','v_{Ax}');
 %          ylabel('km/s')
 %          plot_help('v and v_A',t(1),t(end))
@@ -248,7 +245,7 @@ for jjj = [1:200,202:224,226:303]
 %          plot(t,1e-9*p,'k')
 %          %plot(t,(1e-18)*bsqr/(2*mu)+(1.602e-19)*rho.*temp,'k')
 %          plot_help_nice('thermal pressure',t(1),t(end))
-%          %legend('B^2/2\mu_0','p','p+B^2/2\mu_0')
+%          legend('B^2/2\mu_0','p','p+B^2/2\mu_0')
 %          ylabel('Pa')
 %          subplot(5,1,5); hold on
 %          if sc == 4
@@ -288,9 +285,9 @@ for jjj = [1:200,202:224,226:303]
             pxi = px(dis_range);
             pyi = py(dis_range);
             pzi = pz(dis_range);
-            vaxi = (1/1000)*(10^-9)*(vax(dis_range))./sqrt(mu*(1.67*10^(-27)));
-            vayi = (1/1000)*(10^-9)*(vay(dis_range))./sqrt(mu*(1.67*10^(-27)));
-            vazi = (1/1000)*(10^-9)*(vaz(dis_range))./sqrt(mu*(1.67*10^(-27)));
+            vaxi = (1/1000)*(10^-9)*(vax(dis_range))./sqrt(mu*sw_mass);
+            vayi = (1/1000)*(10^-9)*(vay(dis_range))./sqrt(mu*sw_mass);
+            vazi = (1/1000)*(10^-9)*(vaz(dis_range))./sqrt(mu*sw_mass);
 
             cs_vx(cs) = nanmean(vxi);
             cs_vy(cs) = nanmean(vyi);
@@ -328,10 +325,12 @@ for jjj = [1:200,202:224,226:303]
             cs_Bmag(cs,1) = mean(bsqr(left));
             cs_Bmag(cs,2) = mean(bsqr(right));
 
-            press_balls_std_T(cs,1) = std(temp(left));
-            press_balls_std_T(cs,2) = std(temp(right));
-            press_balls_std(cs,1) = std(p(left));
-            press_balls_std(cs,2) = std(p(right));
+            press_balls_std_B(cs,1) = std(sqrt(bsqr(left)));
+            press_balls_std_B(cs,2) = std(sqrt(bsqr(right)));
+            press_balls_std_p(cs,1) = std(p(left));
+            press_balls_std_p(cs,2) = std(p(right));
+            press_balls_std_n(cs,1) = std(rho(left));
+            press_balls_std_n(cs,2) = std(rho(right));
 
             %subplot(4,1,1);
 %            highlight whole event in black
@@ -386,6 +385,15 @@ for jjj = [1:200,202:224,226:303]
             %if w_ind111 > 0
             %    plot(jti(w_ind111:w_ind222),pxi(w_ind111:w_ind222),'c','LineWidth',3)
             %end
+
+            %JB idea for strong vs weak alfvenic and sw velocity
+            [~,~,w1,w2] = walen(jti,vrotated_x,vrotated_y,vrotated_z,varotated_x,varotated_y,varotated_z,brotated_x,brotated_y,brotated_z,0.05);
+            if w_ind111 > 0
+                weak(cs) = 1;
+            end
+            if w1 > 0
+                strong(cs) = 1;
+            end
 
             %use single spacecraft and fast mag cadence for MVA analysis
             bxx = bx_int1(:,1);
@@ -467,12 +475,6 @@ for jjj = [1:200,202:224,226:303]
             cs_len(cs) = 2*intervals(j,2);
 
             cs_jumps_tot(cs) = sqrt((max(pxi)-min(pxi))^2+(max(pyi)-min(pyi))^2+(max(pzi)-min(pzi))^2); 
-%             v_jumps_totx(cs) =  max(vxi)-min(vxi); 
-%             v_jumps_toty(cs) =  max(vyi)-min(vyi); 
-%             v_jumps_totz(cs) =  max(vzi)-min(vzi); 
-%             va_jumps_totx(cs) =  max(vaxi)-min(vaxi); 
-%             va_jumps_toty(cs) =  max(vayi)-min(vayi); 
-%             va_jumps_totz(cs) =  max(vazi)-min(vazi); 
             cs_shear(cs) = (mean(px(left))*mean(px(right))+mean(py(left))*mean(py(right))+mean(pz(left))*mean(pz(right)))/...
                 sqrt((mean(px(left))^2+mean(py(left))^2+mean(pz(left))^2)*(mean(px(right))^2+mean(py(right))^2+mean(pz(right))^2));
             v_jumps_totx(cs) =  max(vrotated_x)-min(vrotated_x); 
@@ -483,40 +485,43 @@ for jjj = [1:200,202:224,226:303]
             va_jumps_totz(cs) =  max(varotated_z)-min(varotated_z); 
             cs_loc(cs,1) = x_int(1); cs_loc(cs,2) = y_int(1); cs_loc(cs,3) = z_int(1);
         end
-       %saveas(gcf,['ion_cadence/discont1_',num2str(jjj),'.png'])
+       saveas(gcf,['ion_cadence/discont1_',num2str(jjj),'.png'])
        %close all
      end
      %current_sheets(jjj).timing_normals = time_norms;
      %current_sheets(jjj).press_bal_ints = press_balance_intervals;
 end
- save('cs_vx','cs_vx')
- save('cs_vy','cs_vy')
- save('cs_vz','cs_vz')
- save('va_jumps_totx','va_jumps_totx')
- save('va_jumps_toty','va_jumps_toty')
- save('va_jumps_totz','va_jumps_totz')
- save('v_jumps_totx','v_jumps_totx')
- save('v_jumps_toty','v_jumps_toty')
- save('v_jumps_totz','v_jumps_totz')
- save('v_jumps2','v_jumps2')
- save('va_jumps2','va_jumps2')
- save('cs_jumps_tot','cs_jumps_tot')
- save('tags','tags')
- save('cs_loc','cs_loc')    
- save('cs_Bpar','cs_Bpar')    
- save('cs_Bperp','cs_Bperp')    
- save('cs_eigrats','cs_eigrats')    
- save('cs_n1_nt','cs_n1_nt')   
- save('cs_rho_enh','cs_rho_enh')
- save('cs_p_enh','cs_p_enh') 
- save('cs_temp_enh','cs_temp_enh')
- save('cs_norm_vx','cs_norm_vx')   
- save('cs_wal_len','cs_wal_len')
- save('press_balls_std','press_balls_std')
- save('press_balls_std_T','press_balls_std_T')
- save('cs_Bmag','cs_Bmag')
- save('cs_shear','cs_shear')
-save('cs_len','cs_len')
-% open_boundaries
-%  toc
+%  save('cs_vx','cs_vx')
+%  save('cs_vy','cs_vy')
+%  save('cs_vz','cs_vz')
+%  save('va_jumps_totx','va_jumps_totx')
+%  save('va_jumps_toty','va_jumps_toty')
+%  save('va_jumps_totz','va_jumps_totz')
+%  save('v_jumps_totx','v_jumps_totx')
+%  save('v_jumps_toty','v_jumps_toty')
+%  save('v_jumps_totz','v_jumps_totz')
+%  save('v_jumps2','v_jumps2')
+%  save('va_jumps2','va_jumps2')
+%  save('cs_jumps_tot','cs_jumps_tot')
+%  save('tags','tags')
+%  save('cs_loc','cs_loc')    
+%  save('cs_Bpar','cs_Bpar')    
+%  save('cs_Bperp','cs_Bperp')    
+%  save('cs_eigrats','cs_eigrats')    
+%  save('cs_n1_nt','cs_n1_nt')   
+%  save('cs_rho_enh','cs_rho_enh')
+%  save('cs_p_enh','cs_p_enh') 
+%  save('cs_temp_enh','cs_temp_enh')
+%  save('cs_norm_vx','cs_norm_vx')   
+%  save('cs_wal_len','cs_wal_len')
+%  save('press_balls_std_p','press_balls_std_p')
+%  save('press_balls_std_n','press_balls_std_n')
+%  save('press_balls_std_B','press_balls_std_B')
+%  save('cs_Bmag','cs_Bmag')
+%  save('cs_shear','cs_shear')
+% save('cs_len','cs_len')
+% save('strong','strong')
+% save('weak','weak')
+% % open_boundaries
+%   toc
  
